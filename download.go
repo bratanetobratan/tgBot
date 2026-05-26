@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -13,7 +13,7 @@ func DownloadAudio(tmpDir, url string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	outPath := filepath.Join(tmpDir, "audio.%(ext)s")
+	outPath := filepath.Join(tmpDir, "%(title)s.%(ext)s")
 
 	cmd := exec.CommandContext(ctx, "yt-dlp",
 		"-x",
@@ -21,19 +21,21 @@ func DownloadAudio(tmpDir, url string) (string, error) {
 		"-o", outPath,
 		"--no-playlist",
 		"--no-warnings",
+		"--print", "after_move:filepath",
 		url,
 	)
 
-	if _, err := cmd.Output(); err != nil {
+	output, err := cmd.Output()
+	if err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
 			return "", fmt.Errorf("скачивание заняло слишком много времени")
 		}
 		return "", fmt.Errorf("ошибка скачивания: %w", err)
 	}
 
-	finalPath := "~/Downloads/audio.mp3"
-	if _, err := os.Stat(finalPath); os.IsNotExist(err) {
-		return "", fmt.Errorf("файл audio.mp3 не был создан после скачивания")
+	finalPath := strings.TrimSpace(string(output))
+	if finalPath == "" {
+		return "", fmt.Errorf("yt-dlp не вернул путь к файлу")
 	}
 
 	return finalPath, nil

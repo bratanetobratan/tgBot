@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-func SearchYouTube(artist, title string) (string, error) {
-	query := fmt.Sprintf("%s %s", strings.TrimSpace(artist), strings.TrimSpace(title))
+func SearchYouTube(Uquery string) (string, error) {
+	query := strings.TrimSpace(Uquery)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
