@@ -1,6 +1,8 @@
 package main
 
-import "os"
+import (
+	"os"
+)
 
 func GetBotToken() string {
 	token := os.Getenv("tgBotToken")
